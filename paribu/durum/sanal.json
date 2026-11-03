@@ -1,0 +1,339 @@
+{
+ "baslangic": "2026-11-02",
+ "hesaplar": {
+  "sma50_btc_vol": {
+   "kasa": {
+    "BTC": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "ETH": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "SOL": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "XRP": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "DOGE": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "ADA": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "AVAX": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "LINK": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "TRX": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    }
+   },
+   "baslangic_usdt": 200,
+   "gecmis": [
+    {
+     "gun": "2026-11-02",
+     "deger": 200.0
+    }
+   ]
+  },
+  "donchian_vol": {
+   "kasa": {
+    "BTC": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "ETH": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "SOL": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "XRP": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "DOGE": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "ADA": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "AVAX": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "LINK": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    },
+    "TRX": {
+     "usdt": 22.22222222222222,
+     "adet": 0.0,
+     "pay": 0.0
+    }
+   },
+   "baslangic_usdt": 200,
+   "gecmis": [
+    {
+     "gun": "2026-11-02",
+     "deger": 200.0
+    }
+   ]
+  },
+  "al_tut": {
+   "kasa": {
+    "BTC": {
+     "usdt": 0.0,
+     "adet": 0.0002873274723974702,
+     "pay": 1.0
+    },
+    "ETH": {
+     "usdt": 0.0,
+     "adet": 0.009769501593291747,
+     "pay": 1.0
+    },
+    "SOL": {
+     "usdt": 0.0,
+     "adet": 0.23934434338914398,
+     "pay": 1.0
+    },
+    "XRP": {
+     "usdt": 0.0,
+     "adet": 17.577117321824765,
+     "pay": 1.0
+    },
+    "DOGE": {
+     "usdt": 0.0,
+     "adet": 297.3010139225689,
+     "pay": 1.0
+    },
+    "ADA": {
+     "usdt": 0.0,
+     "adet": 116.94258467387213,
+     "pay": 1.0
+    },
+    "AVAX": {
+     "usdt": 0.0,
+     "adet": 2.5996391475623692,
+     "pay": 1.0
+    },
+    "LINK": {
+     "usdt": 0.0,
+     "adet": 1.9882338902362107,
+     "pay": 1.0
+    },
+    "TRX": {
+     "usdt": 0.0,
+     "adet": 68.67883887513608,
+     "pay": 1.0
+    }
+   },
+   "baslangic_usdt": 200,
+   "gecmis": [
+    {
+     "gun": "2026-11-02",
+     "deger": 199.34
+    }
+   ]
+  }
+ },
+ "islemler": [
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 0.0002873274723974702,
+   "ucret": 0.0622,
+   "fiyat": 77086.0,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "btc_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "BTC",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 0.009769501593291747,
+   "ucret": 0.0622,
+   "fiyat": 2267.15,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "eth_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "ETH",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 0.23934434338914398,
+   "ucret": 0.0622,
+   "fiyat": 92.54,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "sol_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "SOL",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 17.577117321824765,
+   "ucret": 0.0622,
+   "fiyat": 1.2601,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "xrp_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "XRP",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 297.3010139225689,
+   "ucret": 0.0622,
+   "fiyat": 0.0745,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "doge_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "DOGE",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 116.94258467387213,
+   "ucret": 0.0622,
+   "fiyat": 0.1894,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "ada_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "ADA",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 2.5996391475623692,
+   "ucret": 0.0622,
+   "fiyat": 8.52,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "avax_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "AVAX",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 1.9882338902362107,
+   "ucret": 0.0622,
+   "fiyat": 11.14,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "link_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "LINK",
+   "fiyat_kaynagi": "paribu"
+  },
+  {
+   "yon": "al",
+   "usdt": 22.2222,
+   "adet": 68.67883887513608,
+   "ucret": 0.0622,
+   "fiyat": 0.3225,
+   "hedef_pay": 1.0,
+   "emir": {
+    "trade": "buy",
+    "type": "market",
+    "total": "22.22",
+    "market": "trx_usdt"
+   },
+   "gun": "2026-11-02",
+   "kural": "al_tut",
+   "coin": "TRX",
+   "fiyat_kaynagi": "paribu"
+  }
+ ],
+ "son_gun": "2026-11-02",
+ "son_calisma": "2026-11-03 12:13 UTC"
+}
