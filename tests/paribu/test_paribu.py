@@ -5,6 +5,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "paribu"))
 import backtest as bt  # noqa: E402
+import portfoy as pf  # noqa: E402
 import veri  # noqa: E402
 
 GUN = bt.GUN_MS
@@ -92,6 +93,29 @@ class Testler(unittest.TestCase):
 
     def test_max_dusus(self):
         self.assertAlmostEqual(bt.max_dusus([1, 2, 1, 3]), -50.0)
+
+
+    def test_portfoy_al_tut_ortalama(self):
+        a = [gun(i, 100 + 10 * i, 0, 0, 100 + 10 * i) for i in range(5)]   # 100 -> 140
+        b = [gun(i, 100, 0, 0, 100) for i in range(5)]                     # yatay
+        r = pf.calistir({"BTC": a, "X": b}, "al_tut", 0.0)
+        # karar gün 0 kapanışında, alım gün 1 açılışında (110), son kapanış 140; X sabit
+        self.assertAlmostEqual(r["getiri"], (140 / 110 - 1) * 50, places=6)
+
+    def test_portfoy_ucret_ve_hizalama(self):
+        a = [gun(i, 100, 0, 0, 100) for i in range(4)]
+        r = pf.calistir({"BTC": a}, "al_tut", 0.01)
+        self.assertAlmostEqual(r["getiri"], (0.99 * 0.99 - 1) * 100, places=6)
+        h = pf.hizala({"A": [gun(0, 1, 1, 1, 1), gun(1, 1, 1, 1, 1)], "B": [gun(1, 1, 1, 1, 1)]})
+        self.assertEqual([len(v) for v in h.values()], [1, 1])
+
+    def test_portfoy_btc_rejimi_nakitte_tutar(self):
+        # BTC sürekli düşüyor -> rejim kapalı -> X yükselse de alınmaz
+        btc = [gun(i, 100 - i * 0.5, 0, 0, 100 - i * 0.5) for i in range(80)]
+        x = [gun(i, 100 + i, 0, 0, 100 + i) for i in range(80)]
+        r = pf.calistir({"BTC": btc, "X": x}, "sma50_btc", 0.0)
+        self.assertAlmostEqual(r["getiri"], 0.0, places=6)
+        self.assertGreater(pf.calistir({"BTC": btc, "X": x}, "sma50", 0.0)["getiri"], 0)
 
 
 if __name__ == "__main__":

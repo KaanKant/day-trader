@@ -9,6 +9,9 @@ on:
       ucretler:
         description: "Karşılaştırılacak ücretler (virgüllü, boş bırakılabilir)"
         default: "0.28,0.1,0.01"
+      sadece_portfoy:
+        description: "Sadece portföy testini çalıştır (true/false)"
+        default: "false"
 
 permissions:
   contents: write
@@ -28,16 +31,22 @@ jobs:
         run: python tests/paribu/test_paribu.py
 
       - name: Strateji testi
+        if: ${{ github.event.inputs.sadece_portfoy != 'true' }}
         env:
           UCRET: ${{ github.event.inputs.ucret }}
           UCRETLER: ${{ github.event.inputs.ucretler }}
         run: python paribu/backtest.py --ucret "${UCRET:-0.28}" --ucretler "${UCRETLER}"
 
+      - name: Portföy testi
+        env:
+          UCRET: ${{ github.event.inputs.ucret }}
+        run: python paribu/portfoy.py --ucret "${UCRET:-0.28}"
+
       - name: Raporu depoya yaz
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add paribu/BACKTEST-RAPORU.md paribu/BACKTEST-RAPORU.json paribu/KOMISYON-KARSILASTIRMA.md 2>/dev/null || git add paribu/BACKTEST-RAPORU.md paribu/BACKTEST-RAPORU.json
+          git add paribu/*.md paribu/*.json
           git commit -m "Paribu strateji testi raporu" || echo "degisiklik yok"
           git pull --rebase -q
           git push
