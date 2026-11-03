@@ -59,13 +59,38 @@ def sinyaller(gunluk, kural):
     raise ValueError(kural)
 
 
+class Karar:
+    """Bir kuralın her gün için hedef paylarını hesaplar. Backtest ve sanal bot aynı kodu kullanır."""
+
+    def __init__(self, gunlukler, kural):
+        self.kural = kural
+        self.coinler = list(gunlukler)
+        T = len(next(iter(gunlukler.values())))
+        btc = gunlukler.get("BTC")
+        self.btc_ok = bt.sma_sinyal(btc, 50) if (btc and "_btc" in kural) else [True] * T
+        self.sinyal = {c: sinyaller(gunlukler[c], kural) for c in self.coinler}
+        self.vol = {c: oynaklik(gunlukler[c]) for c in self.coinler} if "_vol" in kural else None
+
+    def hedef(self, c, i):
+        """i. günün KAPANIŞINA göre c coininde tutulması gereken pay (0-1)."""
+        if not (self.sinyal[c][i] and self.btc_ok[i]):
+            return 0.0
+        if self.vol is not None:
+            v = self.vol[c][i]
+            return min(1.0, HEDEF_GUNLUK_VOL / v) if v else 1.0
+        return 1.0
+
+
+def degisir_mi(simdiki, hedef):
+    """Giriş/çıkış her zaman; oynaklık ayarında %20'den küçük düzeltme yok."""
+    fark = abs(hedef - simdiki)
+    return fark > 0 and (hedef == 0 or simdiki == 0 or fark >= ESIK)
+
+
 def calistir(gunlukler, kural, maliyet):
     coinler = list(gunlukler)
     T = len(next(iter(gunlukler.values())))
-    btc = gunlukler.get("BTC")
-    btc_ok = bt.sma_sinyal(btc, 50) if (btc and "_btc" in kural) else [True] * T
-    sinyal = {c: sinyaller(gunlukler[c], kural) for c in coinler}
-    vol = {c: oynaklik(gunlukler[c]) for c in coinler} if "_vol" in kural else None
+    karar = Karar(gunlukler, kural)
 
     kasa = {c: 1.0 / len(coinler) for c in coinler}
     pay = {c: 0.0 for c in coinler}
@@ -73,16 +98,11 @@ def calistir(gunlukler, kural, maliyet):
     for j in range(1, T):
         for c in coinler:
             g = gunlukler[c]
-            hedef = 1.0 if (sinyal[c][j - 1] and btc_ok[j - 1]) else 0.0
-            if hedef and vol is not None:
-                v = vol[c][j - 1]
-                hedef = min(1.0, HEDEF_GUNLUK_VOL / v) if v else 1.0
-            fark = abs(hedef - pay[c])
-            # Oynaklık ayarında küçük düzeltme yapma; giriş/çıkış her zaman yapılır
-            if fark > 0 and (hedef == 0 or pay[c] == 0 or fark >= ESIK):
+            hedef = karar.hedef(c, j - 1)
+            if degisir_mi(pay[c], hedef):
                 if pay[c] == 0 and hedef > 0:
                     islem += 1
-                u = kasa[c] * fark * maliyet
+                u = kasa[c] * abs(hedef - pay[c]) * maliyet
                 kasa[c] -= u
                 ucret += u
                 pay[c] = hedef
@@ -91,7 +111,7 @@ def calistir(gunlukler, kural, maliyet):
         egri.append(sum(kasa.values()))
         piyasada.append(statistics.mean(pay.values()))
     # sonda her şey satılır
-    son = sum(k * (1 - p * maliyet) for k, p in ((kasa[c], pay[c]) for c in coinler))
+    son = sum(kasa[c] * (1 - pay[c] * maliyet) for c in coinler)
     egri.append(son)
     yil = T / 365.0
     yillik = (son ** (1 / yil) - 1) * 100 if son > 0 else -100.0

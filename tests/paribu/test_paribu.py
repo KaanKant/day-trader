@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "paribu"))
 import backtest as bt  # noqa: E402
 import portfoy as pf  # noqa: E402
+import sanal  # noqa: E402
 import veri  # noqa: E402
 
 GUN = bt.GUN_MS
@@ -116,6 +117,53 @@ class Testler(unittest.TestCase):
         r = pf.calistir({"BTC": btc, "X": x}, "sma50_btc", 0.0)
         self.assertAlmostEqual(r["getiri"], 0.0, places=6)
         self.assertGreater(pf.calistir({"BTC": btc, "X": x}, "sma50", 0.0)["getiri"], 0)
+
+
+    def _ay(self):
+        return {"kurallar": ["al_tut", "sma50"], "coinler": ["BTC", "ETH"], "baslangic_usdt": 1000,
+                "ucret_pct": 0.0, "kayma_pct": 0.0, "min_islem_usdt": 10}
+
+    def test_sanal_ilk_gun_al_tut_alir_ayni_gun_tekrar_islemez(self):
+        btc = [gun(i, 100, 100, 100, 100) for i in range(60)]
+        eth = [gun(i, 10 + i, 10 + i, 10 + i, 10 + i) for i in range(60)]
+        mum = lambda c: {"BTC": btc, "ETH": eth}[c]
+        fiyat = lambda cs: {"BTC": 100.0, "ETH": 70.0}
+        d, rapor, tg = sanal.calistir(self._ay(), {}, mum, fiyat, log=lambda *a: None)
+        at = d["hesaplar"]["al_tut"]["kasa"]
+        self.assertAlmostEqual(at["BTC"]["adet"], 5.0)            # 500 USDT / 100
+        self.assertAlmostEqual(at["ETH"]["adet"], 500 / 70)
+        sm = d["hesaplar"]["sma50"]["kasa"]
+        self.assertEqual(sm["BTC"]["adet"], 0.0)                  # yatay: ortalamanın üstünde değil
+        self.assertGreater(sm["ETH"]["adet"], 0)                  # yükselen: al
+        emirler = [x["emir"] for x in d["islemler"]]
+        self.assertIn({"trade": "buy", "type": "market", "total": "500.00", "market": "btc_usdt"}, emirler)
+        self.assertIsNone(sanal.calistir(self._ay(), d, mum, fiyat, log=lambda *a: None))
+
+    def test_sanal_sinyal_bitince_satar_ve_ucret_duser(self):
+        eth = [gun(i, 10 + i, 0, 0, 10 + i) for i in range(60)]
+        btc = [gun(i, 100, 0, 0, 100) for i in range(61)]
+        ay = self._ay()
+        ay["ucret_pct"] = 1.0
+        d, _, _ = sanal.calistir(ay, {}, lambda c: {"BTC": btc[:60], "ETH": eth}[c],
+                                 lambda cs: {"BTC": 100.0, "ETH": 70.0}, log=lambda *a: None)
+        eth2 = eth + [gun(60, 20, 0, 0, 20)]                      # sert düşüş: ortalamanın altı
+        d2, _, _ = sanal.calistir(ay, d, lambda c: {"BTC": btc, "ETH": eth2}[c],
+                                  lambda cs: {"BTC": 100.0, "ETH": 20.0}, log=lambda *a: None)
+        k = d2["hesaplar"]["sma50"]["kasa"]["ETH"]
+        self.assertEqual(k["adet"], 0.0)
+        self.assertAlmostEqual(k["usdt"], 500 * 0.99 / 70 * 20 * 0.99, places=6)
+        satis = [x for x in d2["islemler"] if x["yon"] == "sat"]
+        self.assertTrue(satis[0]["emir"]["amount"])
+
+    def test_sanal_paribu_fiyat_yoksa_kapanis(self):
+        btc = [gun(i, 100, 0, 0, 100) for i in range(60)]
+        d, rapor, _ = sanal.calistir(self._ay(), {}, lambda c: btc, lambda cs: {}, log=lambda *a: None)
+        self.assertTrue(any("Paribu fiyatı alınamadı" in x for x in rapor))
+
+    def test_paribu_fiyatlari_ayristirma(self):
+        f = sanal.paribu_fiyatlari(["BTC", "ETH"], getir=lambda u: [
+            {"market": "btc_usdt", "last": "95000.5"}, {"market": "eth_tl", "last": "1"}])
+        self.assertEqual(f, {"BTC": 95000.5})
 
 
 if __name__ == "__main__":
