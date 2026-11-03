@@ -254,6 +254,7 @@ def main(argv=None):
     ap.add_argument("--gunluk-yil", type=int, default=6)
     ap.add_argument("--gunici-gun", type=int, default=730)
     ap.add_argument("--coinler", default=",".join(COINLER))
+    ap.add_argument("--ucretler", default="", help="virgüllü ücret listesi, örn. 0.28,0.1,0.01: aynı veriyle komisyon karşılaştırması")
     ap.add_argument("--cikti", default=str(KOK / "BACKTEST-RAPORU.md"))
     a = ap.parse_args(argv)
     maliyet = (a.ucret + a.kayma) / 100
@@ -268,7 +269,7 @@ def main(argv=None):
     simdi = datetime.now(timezone.utc)
 
     tum, yari = {}, [{}, {}]
-    donem = {}
+    donem, veriler = {}, {}
     for c in coinler:
         sym = c + "USDT"
         try:
@@ -282,6 +283,7 @@ def main(argv=None):
             continue
         donem[c] = (tarih(gunluk[0]["t"]), tarih(gunluk[-1]["t"]),
                     tarih(mum15[0]["t"]) if mum15 else "-", tarih(mum15[-1]["t"]) if mum15 else "-")
+        veriler[c] = (gunluk, mum15)
         tum[c] = stratejiler(gunluk, mum15, maliyet)
         for i, (g, m) in enumerate(yarilar(gunluk, mum15)):
             # Trend filtresi tüm günlük veriden hesaplanır; sadece önceki günlere bakar, sızıntı yok
@@ -314,7 +316,41 @@ def main(argv=None):
     Path(a.cikti).with_suffix(".json").write_text(json.dumps({"tum": tum, "yari1": yari[0], "yari2": yari[1]},
                                                              indent=1), encoding="utf-8")
     print("\n".join(L))
+    if a.ucretler:
+        komisyon_karsilastir(veriler, [float(x) for x in a.ucretler.split(",") if x.strip()], a.kayma,
+                             Path(a.cikti).with_name("KOMISYON-KARSILASTIRMA.md"))
     return 0
+
+
+def komisyon_karsilastir(veriler, ucretler, kayma, cikti):
+    """Aynı veriyle farklı komisyon seviyelerinde medyan sonuçlar."""
+    sonuclar = {}
+    for u in ucretler:
+        m = (u + kayma) / 100
+        tum, y1, y2 = {}, {}, {}
+        for c, (g, m15) in veriler.items():
+            tum[c] = stratejiler(g, m15, m)
+            (g1, a1), (g2, a2) = yarilar(g, m15)
+            y1[c] = stratejiler(g1, a1, m, trend_kaynak=g)
+            y2[c] = stratejiler(g2, a2, m, trend_kaynak=g)
+        sonuclar[u] = (tum, y1, y2)
+    isimler = sorted(next(iter(sonuclar[ucretler[0]][0].values())))
+    med = lambda d, s, k: statistics.median(d[c][s][k] for c in d if s in d[c])
+    L = ["# Komisyon karşılaştırması", "",
+         "Aynı veri, farklı komisyon. Kayma her yönde %%%.2f. Hücre: medyan getiri tüm dönem / eski yarı / yeni yarı; "
+         "parantez içinde işlem başı ortalama net." % kayma, "",
+         "| Strateji | " + " | ".join("Komisyon %%%.2f" % u for u in ucretler) + " |",
+         "|---|" + "---|" * len(ucretler)]
+    for s_ in isimler:
+        hucre = []
+        for u in ucretler:
+            t, a1, a2 = sonuclar[u]
+            ort = statistics.mean(t[c][s_]["ort_islem"] for c in t if s_ in t[c])
+            hucre.append("%+.0f%% / %+.0f%% / %+.0f%% (%+.2f%%)" % (
+                med(t, s_, "getiri"), med(a1, s_, "getiri"), med(a2, s_, "getiri"), ort))
+        L.append("| %s | " % s_ + " | ".join(hucre) + " |")
+    Path(cikti).write_text("\n".join(L) + "\n", encoding="utf-8")
+    print("\n".join(L))
 
 
 if __name__ == "__main__":

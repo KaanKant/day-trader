@@ -5,7 +5,10 @@ on:
     inputs:
       ucret:
         description: "Her yönde ücret (%)"
-        default: "0.25"
+        default: "0.28"
+      ucretler:
+        description: "Karşılaştırılacak ücretler (virgüllü, boş bırakılabilir)"
+        default: "0.28,0.1,0.01"
 
 permissions:
   contents: write
@@ -27,13 +30,14 @@ jobs:
       - name: Strateji testi
         env:
           UCRET: ${{ github.event.inputs.ucret }}
-        run: python paribu/backtest.py --ucret "${UCRET:-0.25}"
+          UCRETLER: ${{ github.event.inputs.ucretler }}
+        run: python paribu/backtest.py --ucret "${UCRET:-0.28}" --ucretler "${UCRETLER}"
 
       - name: Raporu depoya yaz
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add paribu/BACKTEST-RAPORU.md paribu/BACKTEST-RAPORU.json
+          git add paribu/BACKTEST-RAPORU.md paribu/BACKTEST-RAPORU.json paribu/KOMISYON-KARSILASTIRMA.md 2>/dev/null || git add paribu/BACKTEST-RAPORU.md paribu/BACKTEST-RAPORU.json
           git commit -m "Paribu strateji testi raporu" || echo "degisiklik yok"
           git pull --rebase -q
           git push
