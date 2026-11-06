@@ -190,9 +190,14 @@ def calistir(ay, durum, mum_getir=None, fiyat_getir=None, simdi=None, log=print)
     gunlukler = pf.hizala({c: v for c, v in gunlukler.items() if v})
     son_i = len(gunlukler["BTC"]) - 1
     gun = bt.tarih(gunlukler["BTC"][son_i]["t"])
+    sadece_vadeli = False
     if durum.get("son_gun") == gun:
-        log("%s mumu zaten işlendi, yeni işlem yok." % gun)
-        return None
+        v = ay.get("vadeli") or {}
+        yeni = ["%s_%gx" % (k, float(v.get("kaldirac", 1))) for k in v.get("kurallar", [])]
+        if not any(a not in (durum.get("vadeli") or {}) for a in yeni):
+            log("%s mumu zaten işlendi, yeni işlem yok." % gun)
+            return None
+        sadece_vadeli = True                    # spot işlendi; sadece yeni vadeli hesap açılır
 
     fiyat = fiyat_getir(coinler)
     kaynak = {}
@@ -208,7 +213,7 @@ def calistir(ay, durum, mum_getir=None, fiyat_getir=None, simdi=None, log=print)
     hesaplar = durum.setdefault("hesaplar", {})
     islemler = durum.setdefault("islemler", [])
     bugun = []
-    for kural in ay["kurallar"]:
+    for kural in ([] if sadece_vadeli else ay["kurallar"]):
         h = hesaplar.setdefault(kural, yeni_hesap(coinler, ay["baslangic_usdt"]))
         for c in coinler:                       # sonradan eklenen coin: boş kasa
             h["kasa"].setdefault(c, {"usdt": 0.0, "adet": 0.0, "pay": 0.0})
