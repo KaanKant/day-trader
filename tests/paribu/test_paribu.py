@@ -7,6 +7,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "paribu"))
 import backtest as bt  # noqa: E402
 import portfoy as pf  # noqa: E402
 import sanal  # noqa: E402
+import vadeli  # noqa: E402
 import veri  # noqa: E402
 
 GUN = bt.GUN_MS
@@ -164,6 +165,54 @@ class Testler(unittest.TestCase):
         f = sanal.paribu_fiyatlari(["BTC", "ETH"], getir=lambda u: [
             {"market": "btc_usdt", "last": "95000.5"}, {"market": "eth_tl", "last": "1"}])
         self.assertEqual(f, {"BTC": 95000.5})
+
+
+    # ---------------------------------------------------------------- vadeli
+    def _sifir_funding(self, g):
+        return {"BTC": {x["t"] // GUN: 0.0 for x in g}}
+
+    def test_vadeli_1x_al_tut_spotla_ayni(self):
+        g = [gun(i, 100 + 10 * i, 100 + 10 * i, 100 + 10 * i, 100 + 10 * i) for i in range(5)]
+        r = vadeli.calistir({"BTC": g}, self._sifir_funding(g), "al_tut", False, 1, 0.0)
+        self.assertAlmostEqual(r["getiri"], (140 / 110 - 1) * 100, places=6)
+        self.assertEqual(r["tasfiye"], 0)
+
+    def test_vadeli_3x_sert_dususte_tasfiye(self):
+        g = [gun(0, 100, 100, 100, 100), gun(1, 100, 100, 100, 100), gun(2, 100, 100, 60, 90),
+             gun(3, 90, 90, 90, 90)]
+        r = vadeli.calistir({"BTC": g}, self._sifir_funding(g), "al_tut", False, 3, 0.0)
+        self.assertEqual(r["tasfiye"], 1)
+        self.assertAlmostEqual(r["getiri"], -100.0, places=6)
+        r1 = vadeli.calistir({"BTC": g}, self._sifir_funding(g), "al_tut", False, 1, 0.0)
+        self.assertEqual(r1["tasfiye"], 0)             # 1x: %40 iğne tasfiye etmez
+
+    def test_vadeli_short_dususten_kazanir(self):
+        g = [gun(i, 200 - 2 * i, 200 - 2 * i, 200 - 2 * i, 200 - 2 * i) for i in range(70)]
+        f = self._sifir_funding(g)
+        ls = vadeli.calistir({"BTC": g}, f, "sma50_btc_vol", True, 1, 0.0)
+        lo = vadeli.calistir({"BTC": g}, f, "sma50_btc_vol", False, 1, 0.0)
+        self.assertGreater(ls["getiri"], 0)
+        self.assertGreater(ls["short_kar"], 0)
+        self.assertAlmostEqual(lo["getiri"], 0.0, places=6)
+
+    def test_vadeli_funding_long_oder(self):
+        g = [gun(i, 100, 100, 100, 100) for i in range(4)]
+        f = {"BTC": {x["t"] // GUN: 0.01 for x in g}}
+        r = vadeli.calistir({"BTC": g}, f, "al_tut", False, 1, 0.0)
+        self.assertLess(r["getiri"], 0)
+        self.assertGreater(r["funding"], 0)
+
+    def test_funding_zip_okuma(self):
+        import io as _io
+        import zipfile as _zf
+        b = _io.BytesIO()
+        with _zf.ZipFile(b, "w") as z:
+            z.writestr("x.csv", "calc_time,funding_interval_hours,last_funding_rate\n"
+                                "%d,8,0.0001\n%d,8,0.0002\n" % (GUN, GUN + 8 * 3600000))
+        from datetime import datetime as _dt, timezone as _tz
+        d = vadeli.funding_gunluk("BTCUSDT", _dt(2026, 1, 1, tzinfo=_tz.utc), _dt(2026, 1, 2, tzinfo=_tz.utc),
+                                  getir=lambda u: b.getvalue(), bekle=0)
+        self.assertAlmostEqual(d[1], 0.0003)
 
 
 if __name__ == "__main__":
