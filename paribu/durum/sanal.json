@@ -371,5 +371,229 @@
   }
  ],
  "son_gun": "2026-11-05",
- "son_calisma": "2026-11-06 06:34 UTC"
+ "son_calisma": "2026-11-06 13:04 UTC",
+ "vadeli": {
+  "sma50_btc_vol_1x": {
+   "baslangic": "2026-11-05",
+   "baslangic_usdt": 200,
+   "gecmis": [
+    {
+     "gun": "2026-11-05",
+     "deger": 199.8
+    }
+   ],
+   "kasa": {
+    "BTC": {
+     "nakit": 44.42222222222222,
+     "adet": -0.00029245153346961575,
+     "pay": -1.0,
+     "olu": false
+    },
+    "ETH": {
+     "nakit": 44.42222222222222,
+     "adet": -0.009930698619682545,
+     "pay": -1.0,
+     "olu": false
+    },
+    "SOL": {
+     "nakit": 44.42222222222222,
+     "adet": -0.24653008899736212,
+     "pay": -1.0,
+     "olu": false
+    },
+    "XRP": {
+     "nakit": 44.42222222222222,
+     "adet": -18.674136321195146,
+     "pay": -1.0,
+     "olu": false
+    },
+    "DOGE": {
+     "nakit": 44.42222222222222,
+     "adet": -308.641975308642,
+     "pay": -1.0,
+     "olu": false
+    },
+    "ADA": {
+     "nakit": 44.19092496467802,
+     "adet": -118.35679997788851,
+     "pay": -0.9895812046151259,
+     "olu": false
+    },
+    "AVAX": {
+     "nakit": 44.42222222222222,
+     "adet": -2.6360880453407143,
+     "pay": -1.0,
+     "olu": false
+    },
+    "LINK": {
+     "nakit": 40.56629678174816,
+     "adet": -1.6875688812170258,
+     "pay": -0.8263096648435106,
+     "olu": false
+    },
+    "TRX": {
+     "nakit": 44.42222222222222,
+     "adet": -69.83727913960472,
+     "pay": -1.0,
+     "olu": false
+    }
+   },
+   "son_gun": "2026-11-05"
+  }
+ },
+ "vadeli_islemler": [
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "BTC",
+   "yon": "short",
+   "fiyat": 75986.0,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "BTCUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "0.000292",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "ETH",
+   "yon": "short",
+   "fiyat": 2237.73,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "ETHUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "0.009931",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "SOL",
+   "yon": "short",
+   "fiyat": 90.14,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "SOLUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "0.246530",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "XRP",
+   "yon": "short",
+   "fiyat": 1.19,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "XRPUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "18.674136",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "DOGE",
+   "yon": "short",
+   "fiyat": 0.072,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "DOGEUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "308.641975",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "ADA",
+   "yon": "short",
+   "fiyat": 0.1858,
+   "usdt": 21.9907,
+   "ucret": 0.022,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "ADAUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "118.356800",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "AVAX",
+   "yon": "short",
+   "fiyat": 8.43,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "AVAXUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "2.636088",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "LINK",
+   "yon": "short",
+   "fiyat": 10.881,
+   "usdt": 18.3624,
+   "ucret": 0.0184,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "LINKUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "1.687569",
+    "reduceOnly": false
+   }
+  },
+  {
+   "gun": "2026-11-05",
+   "kural": "sma50_btc_vol_1x",
+   "coin": "TRX",
+   "yon": "short",
+   "fiyat": 0.3182,
+   "usdt": 22.2222,
+   "ucret": 0.0222,
+   "fiyat_kaynagi": "paribu",
+   "emir": {
+    "symbol": "TRXUSDT",
+    "side": "SELL",
+    "type": "MARKET",
+    "quantity": "69.837279",
+    "reduceOnly": false
+   }
+  }
+ ]
 }
