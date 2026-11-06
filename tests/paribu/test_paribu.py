@@ -215,5 +215,38 @@ class Testler(unittest.TestCase):
         self.assertAlmostEqual(d[1], 0.0003)
 
 
+    def _vay(self, L=1):
+        ay = self._ay()
+        ay["kurallar"] = ["al_tut"]
+        ay["vadeli"] = {"kurallar": ["sma50_btc_vol"], "kaldirac": L, "baslangic_usdt": 200,
+                        "ucret_pct": 0.0, "kayma_pct": 0.0, "funding_gunluk_pct": 0.0}
+        return ay
+
+    def test_sanal_vadeli_dususte_short_acar_ve_kazanir(self):
+        dus = lambda n: [gun(i, 200 - i, 200 - i, 200 - i, 200 - i) for i in range(n)]
+        g60, g61 = dus(60), dus(61)
+        d, rapor, tg = sanal.calistir(self._vay(), {}, lambda c: g60, lambda cs: {"BTC": 141.0, "ETH": 141.0},
+                                      log=lambda *a: None)
+        h = d["vadeli"]["sma50_btc_vol_1x"]
+        self.assertLess(h["kasa"]["BTC"]["adet"], 0)              # short
+        self.assertTrue(any("Vadeli (sanal" in x for x in rapor))
+        self.assertIn('"side":"SELL"', "\n".join(rapor))
+        d2, _, _ = sanal.calistir(self._vay(), d, lambda c: g61, lambda cs: {"BTC": 130.0, "ETH": 130.0},
+                                  log=lambda *a: None)
+        self.assertGreater(d2["vadeli"]["sma50_btc_vol_1x"]["gecmis"][-1]["deger"], 200)
+
+    def test_sanal_vadeli_short_igneyle_tasfiye(self):
+        dus = [gun(i, 200 - i, 200 - i, 200 - i, 200 - i) for i in range(60)]
+        d, _, _ = sanal.calistir(self._vay(L=3), {}, lambda c: dus, lambda cs: {"BTC": 141.0, "ETH": 141.0},
+                                 log=lambda *a: None)
+        igne = dus + [gun(60, 141, 200, 140, 140)]                # gün içinde +%42 iğne
+        d2, rapor, _ = sanal.calistir(self._vay(L=3), d, lambda c: igne, lambda cs: {"BTC": 140.0, "ETH": 140.0},
+                                      log=lambda *a: None)
+        h = d2["vadeli"]["sma50_btc_vol_3x"]
+        # oynaklık ayarı payı küçültebilir; payı 1/0.42'den büyükse tasfiye olmalı
+        if abs(d["vadeli"]["sma50_btc_vol_3x"]["kasa"]["BTC"]["pay"]) > 1 / 0.42:
+            self.assertTrue(h["kasa"]["BTC"]["olu"])
+
+
 if __name__ == "__main__":
     unittest.main()

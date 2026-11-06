@@ -29,6 +29,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import backtest as bt  # noqa: E402
 import portfoy as pf  # noqa: E402
+import vadeli as vd  # noqa: E402
 import veri  # noqa: E402
 
 KOK = Path(__file__).resolve().parent
@@ -108,6 +109,73 @@ def islem_yap(k, hedef, fiyat, ucret, kayma, min_usdt):
     return kayit
 
 
+def vadeli_adim(ay, durum, gunlukler, son_i, fiyat, kaynak, gun):
+    """Sanal vadeli hesaplar (long + short). Pozisyon dünkü mum boyunca açıktıysa önce o günün
+    tasfiye kontrolü ve funding'i uygulanır, sonra bugünün hedefine göre işlem yapılır."""
+    v = ay.get("vadeli") or {}
+    if not v.get("kurallar"):
+        return []
+    coinler = ay["coinler"]
+    maliyet = (v.get("ucret_pct", 0.05) + v.get("kayma_pct", 0.05)) / 100
+    L = float(v.get("kaldirac", 1))
+    fund = float(v.get("funding_gunluk_pct", 0.03)) / 100
+    hesaplar = durum.setdefault("vadeli", {})
+    btc = gunlukler.get("BTC")
+    bugun = []
+    for kural in v["kurallar"]:
+        anahtar = "%s_%gx" % (kural, L)
+        h = hesaplar.setdefault(anahtar, {
+            "baslangic": gun, "baslangic_usdt": v.get("baslangic_usdt", 200), "gecmis": [],
+            "kasa": {c: {"nakit": v.get("baslangic_usdt", 200) / len(coinler), "adet": 0.0, "pay": 0.0,
+                         "olu": False} for c in coinler}})
+        for c in coinler:
+            k = h["kasa"][c]
+            if k["olu"]:
+                continue
+            g = gunlukler[c][son_i]
+            if k["adet"] and h.get("son_gun") and h["son_gun"] < gun:
+                kotu = g["l"] if k["adet"] > 0 else g["h"]
+                if k["nakit"] + k["adet"] * kotu <= vd.BAKIM * abs(k["adet"]) * kotu:
+                    kayit = {"gun": gun, "kural": anahtar, "coin": c, "yon": "TASFİYE", "fiyat": kotu,
+                             "usdt": 0.0, "ucret": 0.0, "emir": {}}
+                    k.update({"nakit": 0.0, "adet": 0.0, "pay": 0.0, "olu": True})
+                    bugun.append(kayit)
+                    continue
+                k["nakit"] -= k["adet"] * g["c"] * fund       # long öder, short alır
+            yon = vd.yonler(gunlukler[c], btc, kural, True)[son_i]
+            hedef = 0.0
+            if yon:
+                p = 1.0
+                if "_vol" in kural:
+                    o = pf.oynaklik(gunlukler[c])[son_i]
+                    p = min(1.0, pf.HEDEF_GUNLUK_VOL / o) if o else 1.0
+                hedef = yon * p * L
+            fark = hedef - k["pay"]
+            yon_degisti = (hedef == 0) != (k["pay"] == 0) or hedef * k["pay"] < 0
+            if not fark or not (yon_degisti or abs(fark) >= pf.ESIK * L):
+                continue
+            P = fiyat[c]
+            deger = k["nakit"] + k["adet"] * P
+            hedef_adet = hedef * deger / P
+            d = hedef_adet - k["adet"]
+            if abs(d) * P < ay.get("min_islem_usdt", 10) and hedef != 0:
+                continue
+            u = abs(d) * P * maliyet
+            k["nakit"] -= d * P + u
+            k["adet"], k["pay"] = hedef_adet, hedef
+            ne = "kapat" if hedef == 0 else ("long" if hedef > 0 else "short")
+            kayit = {"gun": gun, "kural": anahtar, "coin": c, "yon": ne, "fiyat": P,
+                     "usdt": round(abs(d) * P, 4), "ucret": round(u, 4), "fiyat_kaynagi": kaynak[c],
+                     "emir": {"symbol": c + "USDT", "side": "BUY" if d > 0 else "SELL", "type": "MARKET",
+                              "quantity": "%.6f" % abs(d), "reduceOnly": hedef == 0}}
+            bugun.append(kayit)
+        h["son_gun"] = gun
+        deger = sum(h["kasa"][c]["nakit"] + h["kasa"][c]["adet"] * fiyat[c] for c in coinler)
+        h["gecmis"].append({"gun": gun, "deger": round(deger, 2)})
+        h["gecmis"] = h["gecmis"][-400:]
+    return bugun
+
+
 def calistir(ay, durum, mum_getir=None, fiyat_getir=None, simdi=None, log=print):
     """Bir günlük adım. (yeni_durum, rapor_satirlari, telegram_metni) ya da None (bugün işlendi)."""
     simdi = simdi or datetime.now(timezone.utc)
@@ -159,11 +227,50 @@ def calistir(ay, durum, mum_getir=None, fiyat_getir=None, simdi=None, log=print)
         deger = sum(kasa_degeri(h["kasa"][c], fiyat[c]) for c in coinler)
         h["gecmis"].append({"gun": gun, "deger": round(deger, 2)})
         h["gecmis"] = h["gecmis"][-400:]
+    vbugun = vadeli_adim(ay, durum, gunlukler, son_i, fiyat, kaynak, gun)
+    durum["vadeli_islemler"] = (durum.get("vadeli_islemler", []) + vbugun)[-1000:]
     durum["islemler"] = islemler[-1000:]
     durum["son_gun"] = gun
     durum["son_calisma"] = simdi.strftime("%Y-%m-%d %H:%M UTC")
     rapor, tg = rapor_yaz(ay, durum, fiyat, kaynak, bugun, gun)
+    vr, vtg = vadeli_rapor(ay, durum, fiyat, vbugun)
+    rapor[rapor.index("## Bugünkü işlemler") - 1:rapor.index("## Bugünkü işlemler") - 1] = vr
+    tg = tg + ("\n" + vtg if vtg else "")
     return durum, rapor, tg
+
+
+def vadeli_rapor(ay, durum, fiyat, bugun):
+    v, hes = ay.get("vadeli") or {}, durum.get("vadeli") or {}
+    if not hes:
+        return [], ""
+    coinler = ay["coinler"]
+    L = ["", "### Vadeli (sanal, long + short)", "",
+         "Kaldıraç %gx, komisyon %%%.2f + kayma %%%.2f, funding günlük %%%.2f varsayımı (long öder, short alır). "
+         "Fiyat: Paribu spot (vadeli fiyatına çok yakın)." % (
+             v.get("kaldirac", 1), v.get("ucret_pct", 0.05), v.get("kayma_pct", 0.05), v.get("funding_gunluk_pct", 0.03)),
+         "", "| Hesap | Başlangıç | Değer (USDT) | Başlangıçtan | Long | Short | Tasfiye | Bugünkü işlem |",
+         "|---|---|---|---|---|---|---|---|"]
+    tg = []
+    for ad, h in hes.items():
+        deger = sum(h["kasa"][c]["nakit"] + h["kasa"][c]["adet"] * fiyat[c] for c in coinler)
+        lo = [c for c in coinler if h["kasa"][c]["adet"] > 0]
+        sh = [c for c in coinler if h["kasa"][c]["adet"] < 0]
+        ol = [c for c in coinler if h["kasa"][c]["olu"]]
+        n = sum(1 for x in bugun if x["kural"] == ad)
+        deg = (deger / h["baslangic_usdt"] - 1) * 100
+        L.append("| %s | %s | %.2f | %+.1f%% | %s | %s | %s | %d |" % (
+            ad, h["baslangic"], deger, deg, ", ".join(lo) or "-", ", ".join(sh) or "-", ", ".join(ol) or "-", n))
+        tg.append("Vadeli %s: %.0f USDT (%+.1f%%), long: %s, short: %s" % (
+            ad, deger, deg, ", ".join(lo) or "-", ", ".join(sh) or "-"))
+    if bugun:
+        L += ["", "| Hesap | Coin | İşlem | Fiyat | Büyüklük (USDT) | Ücret | Binance vadeli emri (canlıda gidecek) |",
+              "|---|---|---|---|---|---|---|"]
+        for x in bugun:
+            L.append("| %s | %s | %s | %.6g | %.2f | %.2f | `%s` |" % (
+                x["kural"], x["coin"], x["yon"], x["fiyat"], x["usdt"], x["ucret"],
+                json.dumps(x["emir"], separators=(",", ":"))))
+            tg.append("Vadeli %s %s %.0f USDT @ %.6g" % (x["coin"], x["yon"].upper(), x["usdt"], x["fiyat"]))
+    return L, "\n".join(tg)
 
 
 def rapor_yaz(ay, durum, fiyat, kaynak, bugun, gun):

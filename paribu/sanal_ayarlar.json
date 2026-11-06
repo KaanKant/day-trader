@@ -1,8 +1,32 @@
 {
-  "kurallar": ["sma50_btc_vol", "donchian_vol", "al_tut"],
-  "coinler": ["BTC", "ETH", "SOL", "XRP", "DOGE", "ADA", "AVAX", "LINK", "TRX"],
+  "kurallar": [
+    "sma50_btc_vol",
+    "donchian_vol",
+    "al_tut"
+  ],
+  "coinler": [
+    "BTC",
+    "ETH",
+    "SOL",
+    "XRP",
+    "DOGE",
+    "ADA",
+    "AVAX",
+    "LINK",
+    "TRX"
+  ],
   "baslangic_usdt": 200,
   "ucret_pct": 0.28,
   "kayma_pct": 0.05,
-  "min_islem_usdt": 10
+  "min_islem_usdt": 10,
+  "vadeli": {
+    "kurallar": [
+      "sma50_btc_vol"
+    ],
+    "kaldirac": 1,
+    "baslangic_usdt": 200,
+    "ucret_pct": 0.05,
+    "kayma_pct": 0.05,
+    "funding_gunluk_pct": 0.03
+  }
 }
