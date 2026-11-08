@@ -1,13 +1,13 @@
 # Paribu sanal işlem
 
-Son güncelleme: 2026-11-07 05:53 UTC (kapanmış günlük mum: 2026-11-06). Başlangıç: 2026-11-02.
+Son güncelleme: 2026-11-08 05:55 UTC (kapanmış günlük mum: 2026-11-07). Başlangıç: 2026-11-02.
 **Sanal hesap. Gerçek emir verilmez.** Ücret %0.28 + kayma %0.05 her işlemde düşülür.
 
 | Kural | Değer (USDT) | Başlangıçtan | Coinde olan pay | Bugünkü işlem |
 |---|---|---|---|---|
 | sma50_btc_vol | 200.00 | +0.0% | %0 | 0 |
 | donchian_vol | 200.00 | +0.0% | %0 | 0 |
-| al_tut | 193.82 | -3.1% | %100 | 0 |
+| al_tut | 192.52 | -3.7% | %100 | 0 |
 
 ### Vadeli (sanal, long + short)
 
@@ -15,7 +15,7 @@ Kaldıraç 1x, komisyon %0.05 + kayma %0.05, funding günlük %0.03 varsayımı 
 
 | Hesap | Başlangıç | Değer (USDT) | Başlangıçtan | Long | Short | Tasfiye | Bugünkü işlem |
 |---|---|---|---|---|---|---|---|
-| sma50_btc_vol_1x | 2026-11-05 | 200.80 | +0.4% | - | BTC, ETH, SOL, XRP, DOGE, ADA, AVAX, LINK, TRX | - | 0 |
+| sma50_btc_vol_1x | 2026-11-05 | 202.14 | +1.1% | - | BTC, ETH, SOL, XRP, DOGE, ADA, AVAX, LINK, TRX | - | 0 |
 
 ## Bugünkü işlemler
 
@@ -33,6 +33,7 @@ Bugün işlem yok.
 
 | Gün | sma50_btc_vol | donchian_vol | al_tut |
 |---|---|---|---|
+| 2026-11-07 | 200 | 200 | 193 |
 | 2026-11-06 | 200 | 200 | 194 |
 | 2026-11-05 | 200 | 200 | 194 |
 | 2026-11-04 | 200 | 200 | 206 |
